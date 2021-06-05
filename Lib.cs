@@ -34,12 +34,12 @@ namespace Master
 			return previous;
 		}
 
-		public static string GetRandomString(int length, string alphabet, Random random)
+		public static string GetRandomString(int length, Random random)
 		{
 			var array = new char[length];
 
 			for (int j = 0; j < array.Length; j++)
-				array[j] = alphabet[random.Next(alphabet.Length)];
+				array[j] = Node.Alphabet[random.Next(Node.Alphabet.Length)];
 
 			return new string(array);
 		}

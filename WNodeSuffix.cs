@@ -7,7 +7,7 @@ namespace Master
 {
 	public class WNodeSuffix
 	{
-		public static void Test(string pattern, string text, SuffixTreeNode root)
+		public static void Test(string pattern, string text, Node root)
 		{
 			var pairs = GetPairs(pattern, text, root);
 			var sol = pairs.Select(x => x.Item1).OrderBy(x => x.ToString()).ToList();
@@ -26,43 +26,35 @@ namespace Master
 			}
 		}
 
-		public static List<(SuffixTreeNode, SuffixTreeNode)> GetPairs(string pattern, string text, SuffixTreeNode root)
+		public static List<(Node, Node)> GetPairs(string pattern, string text, Node root)
 		{
 			var borders = KMP.Borders(pattern);
 
 			var patternPeriod = pattern.Length - borders[^1];
-			var patternRoot = pattern.Substring(0, patternPeriod);
 
-			var matchLengths = KMP.Match(pattern, borders, text);
-			var nextMatches = Lib.GetNextMatch(matchLengths, pattern.Length);
-			var previousMatches = Lib.GetPreviousMatch(matchLengths, pattern.Length);
-
-			var bordersWR = KMP.Borders(patternRoot + pattern);
-			var matchWR = KMP.Match(patternRoot + pattern, bordersWR, text);
+			var matchW = KMP.Match(pattern, borders, text);
+			var nextMatches = Lib.GetNextMatch(matchW, pattern.Length);
+			var previousMatches = Lib.GetPreviousMatch(matchW, pattern.Length);
 
 			var buffer = new int[text.Length + 2];
 			Array.Fill(buffer, int.MaxValue);
-			var nodesInStack = new SuffixTreeNode[text.Length + 1];
+			var nodesInStack = new Node[text.Length + 1];
 
-			List<(SuffixTreeNode, SuffixTreeNode)> output = new List<(SuffixTreeNode, SuffixTreeNode)>();
+			List<(Node, Node)> output = new List<(Node, Node)>();
 
-			SearchForPairs(root, matchWR, nextMatches, previousMatches, buffer, 0, 0, patternPeriod, nodesInStack, pattern.Length, output);
+			SearchForPairs(root, matchW, nextMatches, previousMatches, buffer, 0, 0, patternPeriod, nodesInStack, pattern.Length, output);
 
 			return output;
 		}
 
-		static void SearchForPairs(SuffixTreeNode node, int[] matchWR, int[] next, int[] previous, int[] buffer, int start, int end,
-			int period, SuffixTreeNode[] stack, int wlen, List<(SuffixTreeNode, SuffixTreeNode)> output)
+		static void SearchForPairs(Node node, int[] matchW, int[] next, int[] previous, int[] buffer, int start, int end,
+			int period, Node[] stack, int wlen, List<(Node, Node)> output)
 		{
-			// the node's edge just corresponds to the end of suffix special character, which doesn't exist in the original string
-			if (node.EdgeStart == node.Word.Length)
-				return;
-
 			start = OutputPairs(node, next, previous, buffer, start, stack, wlen, output);
 
-			var match = node.EdgeEnd == 0 ? 0 : matchWR[node.EdgeEnd - 1];
+			var match = node.EdgeEnd == 0 ? 0 : matchW[node.EdgeEnd - 1];
 
-			if (node.EdgeLen > wlen - period || match < period + node.EdgeLen)
+			if (match < period + node.EdgeLen)
 				start = end;
 
 			var shouldAdd = match % period == 0 && match >= period;
@@ -74,7 +66,7 @@ namespace Master
 
 			stack[node.Depth] = node;
 			foreach (var child in node.Children)
-				SearchForPairs(child.Value, matchWR, next, previous, buffer, start, end, period, stack, wlen, output);
+				SearchForPairs(child.Value, matchW, next, previous, buffer, start, end, period, stack, wlen, output);
 
 			stack[node.Depth] = null;
 
@@ -82,7 +74,7 @@ namespace Master
 				buffer[end - 1] = int.MaxValue;
 		}
 
-		private static int OutputPairs(SuffixTreeNode node, int[] next, int[] previous, int[] buffer, int start, SuffixTreeNode[] stack, int wlen, List<(SuffixTreeNode, SuffixTreeNode)> output)
+		private static int OutputPairs(Node node, int[] next, int[] previous, int[] buffer, int start, Node[] stack, int wlen, List<(Node, Node)> output)
 		{
 			if (node.Depth < wlen) // no possible match
 				return start;

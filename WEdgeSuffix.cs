@@ -9,12 +9,12 @@ namespace Master
 	{
 		public struct Match
 		{
-			public readonly SuffixTreeNode Ancestor;
-			public readonly SuffixTreeNode Descendant;
+			public readonly Node Ancestor;
+			public readonly Node Descendant;
 			public readonly int StartDepth;
 			public readonly int Count;
 
-			public Match(SuffixTreeNode ancestor, SuffixTreeNode descendant, int startDepth, int periods)
+			public Match(Node ancestor, Node descendant, int startDepth, int periods)
 			{
 				Ancestor = ancestor;
 				Descendant = descendant;
@@ -25,7 +25,7 @@ namespace Master
 			public override string ToString() => Ancestor.ToString().Substring(0, StartDepth);
 		}
 
-		public static void Test(string pattern, string text, SuffixTreeNode root)
+		public static void Test(string pattern, string text, Node root)
 		{
 			var borders = KMP.Borders(pattern);
 			var patternPeriod = pattern.Length - borders[^1];
@@ -51,7 +51,7 @@ namespace Master
 			}
 		}
 
-		private static List<string> GetMatchesBrute(string pattern, string text, SuffixTreeNode trie)
+		private static List<string> GetMatchesBrute(string pattern, string text, Node trie)
 		{
 			var trieNodeStrings = trie.Nodes.Select(x => x.ToString()).ToList();
 			var allWithSuffixHs = new HashSet<string>();
@@ -96,14 +96,14 @@ namespace Master
 			return bruteSol;
 		}
 
-		public static List<Match> GetMatches(string pattern, string text, SuffixTreeNode root)
+		public static List<Match> GetMatches(string pattern, string text, Node root)
 		{
 			var borders = KMP.Borders(pattern);
 			var matchLengths = KMP.Match(pattern, borders, text);
 			var nextMatches = Lib.GetNextMatch(matchLengths, pattern.Length);
 			var previousMatches = Lib.GetPreviousMatch(matchLengths, pattern.Length);
 			var patternPeriod = pattern.Length - borders[^1];
-			var nodesInStack = new SuffixTreeNode[text.Length + 2];
+			var nodesInStack = new Node[text.Length + 2];
 
 			var output = new List<Match>();
 			SearchForMatches(root, root, nextMatches, previousMatches, patternPeriod, nodesInStack, pattern.Length, output);
@@ -111,7 +111,7 @@ namespace Master
 			return output;
 		}
 
-		static void SearchForMatches(SuffixTreeNode node, SuffixTreeNode root, int[] next, int[] previous, int period, SuffixTreeNode[] stack, int wlen, List<Match> output)
+		static void SearchForMatches(Node node, Node root, int[] next, int[] previous, int period, Node[] stack, int wlen, List<Match> output)
 		{
 			// the node's edge just corresponds to the end of suffix special character, which doesn't exist in the original string
 			if (node.EdgeStart == node.Word.Length - 1)
@@ -128,8 +128,8 @@ namespace Master
 			stack[node.Depth] = null;
 		}
 
-		private static void OutputMatches(SuffixTreeNode node, int[] next, int[] previous,
-			SuffixTreeNode[] stack, int wlen, int period, List<Match> output)
+		private static void OutputMatches(Node node, int[] next, int[] previous,
+			Node[] stack, int wlen, int period, List<Match> output)
 		{
 			if (node.Depth < wlen) // no possible match
 				return;
@@ -170,7 +170,7 @@ namespace Master
 			}
 		}
 
-		private static SuffixTreeNode Successor(int depth, SuffixTreeNode[] nodesInStack)
+		private static Node Successor(int depth, Node[] nodesInStack)
 		{
 			for (int i = depth; i < nodesInStack.Length; i++)
 				if (nodesInStack[i] != null)

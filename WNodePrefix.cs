@@ -8,7 +8,7 @@ namespace Master
 {
 	class WNodePrefix
 	{
-		public static void Test(string pattern, string text, SuffixTreeNode root)
+		public static void Test(string pattern, string text, Node root)
 		{
 			var pairs = GetPairs(pattern, text, root);
 			var bruteSol = root.Nodes.Select(x => x.ToString()).Where(x => text.Contains(pattern + x)).ToList();
@@ -27,9 +27,9 @@ namespace Master
 			}
 		}
 
-		public static List<(SuffixTreeNode, SuffixTreeNode)> GetPairs(string pattern, string text, SuffixTreeNode root)
+		public static List<(Node, Node)> GetPairs(string pattern, string text, Node root)
 		{
-			var output = new List<(SuffixTreeNode, SuffixTreeNode)>();
+			var output = new List<(Node, Node)>();
 			if (!text.Contains(pattern))
 				return output;
 
@@ -60,7 +60,7 @@ namespace Master
 			return output;
 		}
 
-		public static void SearchForPairs(SuffixTreeNode node, SuffixTreeNode prefixNode, string pattern, string text, List<(SuffixTreeNode, SuffixTreeNode)> output)
+		public static void SearchForPairs(Node node, Node prefixNode, string pattern, string text, List<(Node, Node)> output)
 		{
 			while (node.Depth < prefixNode.Depth - pattern.Length)
 			{

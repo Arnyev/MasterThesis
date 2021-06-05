@@ -1,23 +1,25 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Master
 {
-	public class SuffixTreeNode
+	public class Node
 	{
 		public const int AlphabetSize = 2;
 		public const char EndChar = (char)('A' + AlphabetSize);
+		public static readonly char[] Alphabet = Enumerable.Range(0, AlphabetSize).Select(x => (char)(x + 'A')).ToArray();
 
 		public readonly string Word;
 		public readonly int Depth;
 		public readonly int EdgeStart;
 		public readonly int EdgeEnd;
 
-		public readonly Dictionary<char, SuffixTreeNode> Children = new Dictionary<char, SuffixTreeNode>();
+		public readonly Dictionary<char, Node> Children = new Dictionary<char, Node>();
 		public int EdgeLen => EdgeEnd - EdgeStart;
 		public int Offset => EdgeEnd - Depth;
 		public bool IsLeaf => EdgeEnd == Word.Length;
 
-		public SuffixTreeNode(string word, List<string> suffixes, int previousDepth)
+		public Node(string word, List<string> suffixes, int previousDepth)
 		{
 			Word = word;
 
@@ -67,30 +69,30 @@ namespace Master
 				if (lists[i].Count != 0)
 				{
 					var nextChar = i == AlphabetSize ? EndChar : (char)('A' + i);
-					Children.Add(nextChar, new SuffixTreeNode(word, lists[i], Depth));
+					Children.Add(nextChar, new Node(word, lists[i], Depth));
 				}
 		}
 
 		public override string ToString() => Word.Substring(EdgeEnd - Depth, Depth);
 
-		public static SuffixTreeNode Build(string s)
+		public static Node Build(string s)
 		{
 			var suffixes = new List<string> { s };
 			for (int i = 1; i < s.Length; i++)
 				suffixes.Add(s[i..]);
 
-			var root = new SuffixTreeNode(s, suffixes, -1);
+			var root = new Node(s, suffixes, -1);
 			return root;
 		}
 
-		public List<SuffixTreeNode> Nodes
+		public List<Node> Nodes
 		{
 			get
 			{
-				var stack = new Stack<(SuffixTreeNode, int)>();
+				var stack = new Stack<(Node, int)>();
 				stack.Push((this, 0));
 
-				var list = new List<SuffixTreeNode>();
+				var list = new List<Node>();
 
 				while (stack.Count != 0)
 				{
